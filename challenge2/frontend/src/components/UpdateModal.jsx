@@ -1,41 +1,42 @@
+import React, { useEffect, useState } from "react";
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
 
-const InputModal = ({ modalView, setModalView, getCurrencies }) => {
-  const [base, setBase] = useState("");
-  const [counter, setCounter] = useState("");
-  const [rate, setRate] = useState("");
+const UpdateModal = ({
+  updateModalView,
+  setUpdateModalView,
+  getCurrencies,
+  updateContent,
+}) => {
+  const [base, setBase] = useState(updateContent.base);
+  const [counter, setCounter] = useState(updateContent.counter);
+  const [rate, setRate] = useState(updateContent.rate);
 
   const [baseError, setBaseError] = useState(false);
   const [counterError, setCounterError] = useState(false);
   const [rateError, setRateError] = useState(false);
 
   const handleClose = () => {
-    setModalView(false);
+    setUpdateModalView(false);
     setBaseError(false);
     setCounterError(false);
     setRateError(false);
-    setBase("");
-    setCounter("");
-    setRate("");
   };
 
-  const addCurrency = async () => {
-    setBaseError(false);
-    setCounterError(false);
-    setRateError(false);
-
-    const res = await fetch(import.meta.env.VITE_SERVER + `/currencies`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        base,
-        counter,
-        rate,
-      }),
-    });
+  const updateEntry = async () => {
+    const res = await fetch(
+      import.meta.env.VITE_SERVER + `/currencies/${updateContent.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          base,
+          counter,
+          rate,
+        }),
+      }
+    );
 
     const data = await res.json();
 
@@ -64,9 +65,15 @@ const InputModal = ({ modalView, setModalView, getCurrencies }) => {
     }
   };
 
+  useEffect(() => {
+    setBase(updateContent.base);
+    setCounter(updateContent.counter);
+    setRate(updateContent.rate);
+  }, [updateContent]);
+
   return (
     <div>
-      <Modal open={modalView} onClose={handleClose}>
+      <Modal open={updateModalView} onClose={handleClose}>
         <Box
           sx={{
             position: "absolute",
@@ -129,8 +136,8 @@ const InputModal = ({ modalView, setModalView, getCurrencies }) => {
               }}
             />
 
-            <Button variant="outlined" size="small" onClick={addCurrency}>
-              Add
+            <Button variant="outlined" size="small" onClick={updateEntry}>
+              Update
             </Button>
             <Button
               sx={{ position: "absolute", right: 0, top: 0, fontSize: "1rem" }}
@@ -146,4 +153,4 @@ const InputModal = ({ modalView, setModalView, getCurrencies }) => {
   );
 };
 
-export default InputModal;
+export default UpdateModal;

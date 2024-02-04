@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
 import InputModal from "./InputModal";
+import UpdateModal from "./UpdateModal";
 
 const Dashboard = () => {
   const [currency, setCurrency] = useState();
   const [loading, setLoading] = useState(true);
 
   const [modalView, setModalView] = useState(false);
+  const [updateModalView, setUpdateModalView] = useState(false);
+
+  const [updateContent, setUpdateContent] = useState({});
 
   const handleOpen = () => {
     setModalView(true);
+  };
+
+  const handleUpdateModal = (id, base, counter, rate) => {
+    setUpdateModalView(true);
+    setUpdateContent({
+      id: id,
+      base: base,
+      counter: counter,
+      rate: rate,
+    });
   };
 
   const getCurrencies = async () => {
@@ -108,7 +122,12 @@ const Dashboard = () => {
                       color="error"
                       sx={{ fontSize: "12px", padding: "1.5px" }}
                       onClick={() => {
-                        deleteEntry(ele.id);
+                        handleUpdateModal(
+                          ele.id,
+                          ele.base,
+                          ele.counter,
+                          ele.rate
+                        );
                       }}
                     >
                       Update
@@ -147,6 +166,12 @@ const Dashboard = () => {
         modalView={modalView}
         setModalView={setModalView}
         getCurrencies={getCurrencies}
+      />
+      <UpdateModal
+        updateModalView={updateModalView}
+        setUpdateModalView={setUpdateModalView}
+        getCurrencies={getCurrencies}
+        updateContent={updateContent}
       />
     </Container>
   );
