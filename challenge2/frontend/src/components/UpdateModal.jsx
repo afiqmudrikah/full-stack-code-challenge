@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
+import React, { useContext, useEffect, useState } from "react";
+import UserContext from "../context/user";
 
 const UpdateModal = ({
   updateModalView,
@@ -7,6 +8,8 @@ const UpdateModal = ({
   getCurrencies,
   updateContent,
 }) => {
+  const useCtx = useContext(UserContext);
+
   const [base, setBase] = useState(updateContent.base);
   const [counter, setCounter] = useState(updateContent.counter);
   const [rate, setRate] = useState(updateContent.rate);
@@ -23,12 +26,17 @@ const UpdateModal = ({
   };
 
   const updateEntry = async () => {
+    setBaseError(false);
+    setCounterError(false);
+    setRateError(false);
+
     const res = await fetch(
       import.meta.env.VITE_SERVER + `/currencies/${updateContent.id}`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer " + useCtx.accessToken,
         },
         body: JSON.stringify({
           base,
@@ -42,37 +50,43 @@ const UpdateModal = ({
 
     if (res.ok) {
       if (data.status === "error") {
+        console.error(data);
+
         if (base.length !== 3) {
           setBaseError(true);
         }
         if (counter.length !== 3) {
           setCounterError(true);
         }
+        if (rate == null || rate == undefined || rate === "") {
+          setRateError(true);
+        }
         if (isNaN(rate)) {
           setRateError(true);
         }
-
-        console.error(data);
       } else {
         setBase("");
         setCounter("");
         setRate("");
         getCurrencies();
         handleClose();
-        setBaseError(false);
-        setCounterError(false);
       }
+    } else {
+      console.error(data);
+      alert(data.message);
     }
   };
 
   useEffect(() => {
-    setBase(updateContent.base);
-    setCounter(updateContent.counter);
-    setRate(updateContent.rate);
+    if (updateContent) {
+      setBase(updateContent.base || "");
+      setCounter(updateContent.counter || "");
+      setRate(updateContent.rate || "");
+    }
   }, [updateContent]);
 
   return (
-    <div>
+    <>
       <Modal open={updateModalView} onClose={handleClose}>
         <Box
           sx={{
@@ -136,11 +150,17 @@ const UpdateModal = ({
               }}
             />
 
-            <Button variant="outlined" size="small" onClick={updateEntry}>
+            <Button
+              variant="outlined"
+              color="success"
+              size="small"
+              onClick={updateEntry}
+            >
               Update
             </Button>
             <Button
               sx={{ position: "absolute", right: 0, top: 0, fontSize: "1rem" }}
+              color="error"
               size="small"
               onClick={handleClose}
             >
@@ -149,7 +169,7 @@ const UpdateModal = ({
           </Box>
         </Box>
       </Modal>
-    </div>
+    </>
   );
 };
 

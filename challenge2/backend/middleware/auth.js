@@ -8,8 +8,7 @@ const auth = (req, res, next) => {
   const token = req.headers["authorization"].replace("Bearer ", "");
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.ACCESS_SECRET);
-      req.decoded = decoded;
+      jwt.verify(token, process.env.ACCESS_SECRET);
       next();
     } catch (error) {
       console.log(error.name);

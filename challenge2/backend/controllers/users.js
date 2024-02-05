@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 
 const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = req.body.username.trim();
+    const password = req.body.password;
 
     const user = await pool.query(
       "SELECT * FROM user WHERE username = ? && password = ?",
@@ -15,11 +16,9 @@ const loginUser = async (req, res) => {
     if (rows.length == 0) {
       return res.json({
         status: "error",
-        message: "Invalid email or password",
+        message: "Invalid username or password",
       });
     }
-
-    console.log(rows[0].username);
 
     const payload = {
       username: rows[0].username,
@@ -28,9 +27,9 @@ const loginUser = async (req, res) => {
     const accessToken = jwt.sign(payload, process.env.ACCESS_SECRET);
 
     res.json({
-      accessToken,
       status: "ok",
       message: "User logged in",
+      accessToken,
     });
   } catch (error) {
     console.error(error.message);

@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
+import React, { useContext, useEffect, useState } from "react";
 import InputModal from "./InputModal";
 import UpdateModal from "./UpdateModal";
+import UserContext from "../context/user";
 
 const Dashboard = () => {
+  const useCtx = useContext(UserContext);
+
   const [currency, setCurrency] = useState();
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +27,10 @@ const Dashboard = () => {
       counter: counter,
       rate: rate,
     });
+  };
+
+  const handleLogout = () => {
+    useCtx.setAccessToken("");
   };
 
   const getCurrencies = async () => {
@@ -51,6 +58,7 @@ const Dashboard = () => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + useCtx.accessToken,
       },
     });
 
@@ -61,8 +69,10 @@ const Dashboard = () => {
         console.error(data);
       } else {
         getCurrencies();
-        console.log("Entry deleted");
       }
+    } else {
+      console.error(data);
+      alert(data.message);
     }
   };
 
@@ -71,108 +81,149 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <Container sx={{ bgcolor: "grey", height: "100vh" }}>
-      <Typography variant="h2" sx={{ textAlign: "center" }}>
-        Dashboard
-      </Typography>
-
-      <Grid
-        container
-        sx={{ width: 4 / 5, margin: "auto", mt: 2, textAlign: "center" }}
+    <Container sx={{ bgcolor: "#f4f4f4", height: "100vh" }}>
+      <Box
+        sx={{
+          height: "100vh",
+          position: "relative",
+          border: "2px solid black",
+          borderRadius: "10px",
+          boxShadow: "1px 2px",
+          p: "2rem",
+        }}
       >
-        <Grid item xs={4}>
-          <Box sx={{ border: 1 }}>
-            <Typography sx={{ fontWeight: "Bold" }}>Base</Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={4}>
-          <Box sx={{ border: 1 }}>
-            <Typography sx={{ fontWeight: "Bold" }}>Counter</Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={2}>
-          <Box sx={{ border: 1 }}>
-            <Typography sx={{ fontWeight: "Bold" }}>Rate</Typography>
-          </Box>
-        </Grid>
-        {loading ? (
-          <Typography>Loading...</Typography>
-        ) : (
-          currency.map((ele) => {
-            return (
-              <>
-                <Grid item xs={4}>
-                  <Box sx={{ border: 1 }}>
-                    <Typography>{ele.base}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={4}>
-                  <Box sx={{ border: 1 }}>
-                    <Typography>{ele.counter}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={2}>
-                  <Box sx={{ border: 1 }}>
-                    <Typography>{ele.rate}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={1}>
-                  <Box sx={{ border: 1 }}>
-                    <Button
-                      color="error"
-                      sx={{ fontSize: "12px", padding: "1.5px" }}
-                      onClick={() => {
-                        handleUpdateModal(
-                          ele.id,
-                          ele.base,
-                          ele.counter,
-                          ele.rate
-                        );
-                      }}
-                    >
-                      Update
-                    </Button>
-                  </Box>
-                </Grid>
-                <Grid item xs={1}>
-                  <Box sx={{ border: 1 }}>
-                    <Button
-                      color="error"
-                      sx={{ fontSize: "12px", padding: "1.5px" }}
-                      onClick={() => {
-                        deleteEntry(ele.id);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                </Grid>
-              </>
-            );
-          })
-        )}
-      </Grid>
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Button
-          variant="contained"
-          color="success"
-          sx={{ mt: 2 }}
-          onClick={handleOpen}
+        <Typography
+          variant="h2"
+          sx={{ textAlign: "center", fontFamily: "monospace" }}
         >
-          Add new currency pair
+          Dashboard
+        </Typography>
+
+        <Button
+          sx={{ position: "absolute", right: 10, top: 10 }}
+          variant="contained"
+          color="error"
+          size="small"
+          onClick={handleLogout}
+        >
+          Logout
         </Button>
+
+        <Grid
+          container
+          sx={{ width: 4 / 5, margin: "auto", mt: 2, textAlign: "center" }}
+        >
+          <Grid item xs={4}>
+            <Box
+              sx={{
+                border: 1,
+                borderTopLeftRadius: "8px",
+                bgcolor: "#dcdcdc",
+              }}
+            >
+              <Typography sx={{ fontWeight: "Bold" }}>Base</Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={4}>
+            <Box
+              sx={{
+                border: 1,
+                bgcolor: "#dcdcdc",
+              }}
+            >
+              <Typography sx={{ fontWeight: "Bold" }}>Counter</Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={2}>
+            <Box
+              sx={{
+                border: 1,
+                borderTopRightRadius: "8px",
+                bgcolor: "#dcdcdc",
+              }}
+            >
+              <Typography sx={{ fontWeight: "Bold" }}>Rate</Typography>
+            </Box>
+          </Grid>
+          {loading ? (
+            <Typography>Loading...</Typography>
+          ) : (
+            currency.map((ele) => {
+              return (
+                <>
+                  <Grid item xs={4}>
+                    <Box sx={{ border: 1 }}>
+                      <Typography>{ele.base}</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Box sx={{ border: 1 }}>
+                      <Typography>{ele.counter}</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Box sx={{ border: 1 }}>
+                      <Typography>{ele.rate}</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box sx={{ border: 1 }}>
+                      <Button
+                        color="success"
+                        sx={{ fontSize: "12px", padding: "1.5px" }}
+                        onClick={() => {
+                          handleUpdateModal(
+                            ele.id,
+                            ele.base,
+                            ele.counter,
+                            ele.rate
+                          );
+                        }}
+                      >
+                        Update
+                      </Button>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box sx={{ border: 1 }}>
+                      <Button
+                        color="error"
+                        sx={{ fontSize: "12px", padding: "1.5px" }}
+                        onClick={() => {
+                          deleteEntry(ele.id);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </Grid>
+                </>
+              );
+            })
+          )}
+        </Grid>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            variant="contained"
+            color="success"
+            sx={{ mt: 2 }}
+            onClick={handleOpen}
+          >
+            Add new currency pair
+          </Button>
+        </Box>
+        <InputModal
+          modalView={modalView}
+          setModalView={setModalView}
+          getCurrencies={getCurrencies}
+        />
+        <UpdateModal
+          updateModalView={updateModalView}
+          setUpdateModalView={setUpdateModalView}
+          getCurrencies={getCurrencies}
+          updateContent={updateContent}
+        />
       </Box>
-      <InputModal
-        modalView={modalView}
-        setModalView={setModalView}
-        getCurrencies={getCurrencies}
-      />
-      <UpdateModal
-        updateModalView={updateModalView}
-        setUpdateModalView={setUpdateModalView}
-        getCurrencies={getCurrencies}
-        updateContent={updateContent}
-      />
     </Container>
   );
 };

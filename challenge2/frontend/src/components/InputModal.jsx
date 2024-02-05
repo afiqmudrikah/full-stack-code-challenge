@@ -1,7 +1,10 @@
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import UserContext from "../context/user";
 
 const InputModal = ({ modalView, setModalView, getCurrencies }) => {
+  const useCtx = useContext(UserContext);
+
   const [base, setBase] = useState("");
   const [counter, setCounter] = useState("");
   const [rate, setRate] = useState("");
@@ -29,6 +32,7 @@ const InputModal = ({ modalView, setModalView, getCurrencies }) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + useCtx.accessToken,
       },
       body: JSON.stringify({
         base,
@@ -41,26 +45,30 @@ const InputModal = ({ modalView, setModalView, getCurrencies }) => {
 
     if (res.ok) {
       if (data.status === "error") {
+        console.error(data);
+
         if (base.length !== 3) {
           setBaseError(true);
         }
         if (counter.length !== 3) {
           setCounterError(true);
         }
+        if (rate == null || rate == undefined || rate === "") {
+          setRateError(true);
+        }
         if (isNaN(rate)) {
           setRateError(true);
         }
-
-        console.error(data);
       } else {
         setBase("");
         setCounter("");
         setRate("");
         getCurrencies();
         handleClose();
-        setBaseError(false);
-        setCounterError(false);
       }
+    } else {
+      console.error(data);
+      alert(data.message);
     }
   };
 
@@ -129,11 +137,17 @@ const InputModal = ({ modalView, setModalView, getCurrencies }) => {
               }}
             />
 
-            <Button variant="outlined" size="small" onClick={addCurrency}>
+            <Button
+              variant="outlined"
+              color="success"
+              size="small"
+              onClick={addCurrency}
+            >
               Add
             </Button>
             <Button
               sx={{ position: "absolute", right: 0, top: 0, fontSize: "1rem" }}
+              color="error"
               size="small"
               onClick={handleClose}
             >

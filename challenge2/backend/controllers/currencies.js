@@ -55,7 +55,23 @@ const addCurrency = async (req, res) => {
 const updateCurrency = async (req, res) => {
   try {
     const { id } = req.params;
-    const { base, counter, rate } = req.body;
+    const base = req.body.base.trim().toUpperCase();
+    const counter = req.body.counter.trim().toUpperCase();
+    const rate = parseFloat(req.body.rate);
+
+    if (base.length !== 3 || counter.length !== 3) {
+      return res.json({
+        status: "error",
+        message: "Base and counter must be 3 chars long",
+      });
+    }
+
+    if (isNaN(rate)) {
+      return res.json({
+        status: "error",
+        message: "Rate must be a number",
+      });
+    }
 
     await pool.query(
       "UPDATE currency SET base = ?, counter = ?, rate = ? WHERE id = ?",
